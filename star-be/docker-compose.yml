@@ -18,6 +18,18 @@ services:
       db:
         condition: service_healthy
 
+  # Static build of the sibling star-fe Angular app, served by nginx.
+  # Port 4200 matches CORS_ALLOWED_ORIGIN above and `ng serve`'s
+  # default, so the API calls made from the browser work unchanged
+  # whether the frontend is running via this container or `npm start`.
+  web:
+    build:
+      context: ../star-fe
+    ports:
+      - "4200:80"
+    depends_on:
+      - app
+
   db:
     image: mysql:8.0
     environment:
