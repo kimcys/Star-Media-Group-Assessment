@@ -21,7 +21,7 @@ $appEnv = env('APP_ENV', 'production');
 error_reporting(E_ALL);
 ini_set('display_errors', $appEnv === 'development' ? '1' : '0');
 
-date_default_timezone_set('UTC');
+date_default_timezone_set('Asia/Kuala_Lumpur');
 
 // Autoload our own classes: `ClassName` resolves to includes/ClassName.php
 spl_autoload_register(function (string $class): void {
