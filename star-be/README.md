@@ -1,4 +1,4 @@
-# Star Media Group — Practical Test (Senior Web Developer)
+# Star Media Group — Practical Test
 
 PHP 7/8 + MySQL backend implementing cookie consent tracking and a bonus
 secured admin portal to view submitted consent decisions. Built as an

@@ -1,8 +1,8 @@
-# Star Media Group — Practical Test (Senior Web Developer)
+# Star Media Group — Practical Test
 
 A cookie-consent-compliant 4-page website (Home, About, Privacy
 Policy, Terms & Conditions) plus a secured admin portal to review
-submitted consent decisions — built per [`requirement.pdf`](requirement.pdf).
+submitted consent decisions.
 
 Two sibling projects, each with its own detailed README:
 
@@ -18,7 +18,7 @@ this file intentionally doesn't duplicate that detail.
 
 ## Why an Angular frontend?
 
-`requirement.pdf` describes the simplest baseline implementation — a
+requirements describes the simplest baseline implementation — a
 PHP-rendered website. What's here instead is a deliberate,
 production-shaped split: **PHP + MySQL owns every piece of required
 logic** (the consent API, cookie handling, GUID generation, DB
@@ -142,7 +142,7 @@ npm test
 
 ## Status against the requirements
 
-See [`requirement.pdf`](requirement.pdf) for the full brief. Summary:
+For the full brief. Summary:
 
 - ✅ 4-page public site, mobile-responsive
 - ✅ Blocking cookie-consent banner (GUID + timestamp + version cookie,
