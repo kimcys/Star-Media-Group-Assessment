@@ -91,7 +91,7 @@ Password must be 8+ characters.
 
 - Public site: http://localhost:4200
 - Admin login: http://localhost:4200/admin/login
-- Backend API root: http://localhost:8000/api/ (returns JSON — a health check plus a list of available endpoints)
+- Backend API root: http://localhost:8000/api/
 - Swagger / API docs: http://localhost:8000/docs/api-docs.html
 
 ### Stopping
