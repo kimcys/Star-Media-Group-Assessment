@@ -4,17 +4,33 @@ A cookie-consent-compliant 4-page website (Home, About, Privacy
 Policy, Terms & Conditions) plus a secured admin portal to review
 submitted consent decisions.
 
-Two sibling projects, each with its own detailed README:
+Two sibling projects, each its own repo, pulled in here as git
+submodules:
 
 | Repo | What it is | README |
 |------|------------|--------|
-| [`star-be`](star-be) | PHP 8 + MySQL JSON API — consent tracking, CSRF, admin auth, PHPUnit tests, OpenAPI docs | [star-be/README.md](star-be/README.md) |
-| [`star-fe`](star-fe) | Angular 22 + Tailwind v4 SPA — the 4 public pages, the admin portal UI, dark mode, full Vitest coverage | [star-fe/README.md](star-fe/README.md) |
+| [`star-be`](https://github.com/kimcys/star-be) | PHP 8 + MySQL JSON API — consent tracking, CSRF, admin auth, PHPUnit tests, OpenAPI docs | [star-be/README.md](star-be/README.md) |
+| [`star-fe`](https://github.com/kimcys/star-fe) | Angular 22 + Tailwind v4 SPA — the 4 public pages, the admin portal UI, dark mode, full Vitest coverage | [star-fe/README.md](star-fe/README.md) |
 
 This root README is the fastest path to running **both together**.
 For anything specific to one side (environment variables, API
 endpoints, component structure, etc.), see that project's own README —
 this file intentionally doesn't duplicate that detail.
+
+## Cloning
+
+Because `star-be` and `star-fe` are submodules, a plain `git clone`
+leaves both directories empty. Clone with submodules included:
+
+```bash
+git clone --recurse-submodules https://github.com/kimcys/Star-Media-Group-Assessment.git
+```
+
+Already cloned without that flag? Fetch them into the existing checkout:
+
+```bash
+git submodule update --init
+```
 
 ## Why an Angular frontend?
 
