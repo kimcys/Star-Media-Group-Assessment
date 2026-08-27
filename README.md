@@ -111,8 +111,9 @@ Both are fully documented in their own READMEs:
   — `npm install && npm start` (`ng serve`, http://localhost:4200).
 
 If you run the backend manually instead of via Docker, the frontend's
-API base URL (`star-fe/src/app/core/config/api.config.ts`) already
-defaults to `http://localhost:8000`, so no change is needed there.
+API base URL (`star-fe/src/environments/environment.ts`, read via
+`api.config.ts`) already defaults to `http://localhost:8000`, so no
+change is needed there.
 
 ## Things that matter across both sides
 
@@ -128,15 +129,10 @@ defaults to `http://localhost:8000`, so no change is needed there.
   whatever `CORS_ALLOWED_ORIGIN` is set to (`http://localhost:4200` by
   default, in both `docker-compose.yml` and `.env.example`). Change it
   in one place if the frontend ever runs on a different origin.
-- **Google Maps** — the About page embeds the office location via the
-  Maps Embed API. The key is a plain constant in
-  `star-fe/src/app/pages/about/about.ts`; for the map to actually
-  render, that key's Google Cloud project needs the Maps Embed API
-  enabled and billing turned on (see
-  [star-fe/README.md → Google Maps](star-fe/README.md#google-maps)).
-  Nothing renders (a Google error message shows instead) until that's
-  done — it's a Google Cloud Console step, not something fixable in
-  code.
+- **Map** — the About page embeds the office location via
+  OpenStreetMap's free embed — no API key, account, or billing, so it
+  renders correctly with zero setup (see
+  [star-fe/README.md → Map](star-fe/README.md#map)).
 - **Design system / dark mode** — the frontend's whole visual language
   (colors, type scale, spacing, dark mode) is centralized as Tailwind
   v4 `@theme` tokens in `star-fe/src/styles.css`; see
