@@ -1,0 +1,6 @@
+[submodule "star-be"]
+	path = star-be
+	url = https://github.com/kimcys/star-be.git
+[submodule "star-fe"]
+	path = star-fe
+	url = https://github.com/kimcys/star-fe.git
