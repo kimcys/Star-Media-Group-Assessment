@@ -87,6 +87,8 @@ These go beyond the two specific fixes above. In plain words, here's what change
 - **Added automated browser tests (end-to-end tests).** These are robots that actually open the real website in a real browser and click around — checking the cookie banner appears/disappears correctly, and that admin login/logout works — just like a real visitor would, instead of only testing small pieces of code in isolation.
 - **Added the same kind of automatic testing on every code change (CI)** as the backend: lint, unit tests, the new browser tests, a security check on dependencies, and a Docker image build + scan.
 
-Together, these make the two apps closer to how a real company would run them in production — safer containers, automatic checks before anything gets merged, and tests that actually exercise the real app instead of just the code in isolation.
+- **Turned on branch protection for `main` on both repos.** In plain words: nobody (other than the repo owner, for now, to keep solo iteration fast before the deadline) can push code straight to `main` anymore — it has to go through a pull request, and that pull request can't be merged unless the automatic checks above are all green. This is a real, live GitHub setting, not just something described in words.
 
-_star-be enhancements and star-fe enhancements: committed separately, not yet pushed as of this note._
+Together, these make the two apps closer to how a real company would run them in production — safer containers, automatic checks before anything gets merged, branch protection backing that up, and tests that actually exercise the real app instead of just the code in isolation.
+
+_All of the above is committed and pushed to `main` on both `star-be` and `star-fe`, and both repos' CI pipelines are green._
