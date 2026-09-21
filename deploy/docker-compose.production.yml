@@ -56,6 +56,10 @@ services:
       APP_ENV: ${APP_ENV}
       APP_DEBUG: ${APP_DEBUG}
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
+      # frontend and backend are on different subdomains here, so the
+      # CSRF cookie needs a Domain wide enough for frontend JS on
+      # aimanhakimcy.com to read a cookie issued by api.aimanhakimcy.com.
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
     depends_on:
       db:
         condition: service_healthy
