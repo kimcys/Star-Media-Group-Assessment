@@ -66,3 +66,27 @@ directly, not these entry-point scripts, since the scripts have no
 class to instantiate in a unit test).
 
 _star-be commit: `61022f2`_
+
+## 3. Extra improvements (not asked for by name — feedback invited "any other improvements")
+
+These go beyond the two specific fixes above. In plain words, here's what changed and why it's better:
+
+### Backend (`star-be`)
+
+- **The app no longer runs as an admin/root user, and uses a real web server.** Before, the Docker container ran PHP's built-in test server — which PHP itself says is "not intended for production" — and it ran as the most powerful user on the system. Now it uses Apache (a proper web server) running as a low-privilege user. Think of it like the difference between giving a shop assistant a key to just the till versus a master key to the whole building — if something ever goes wrong, the damage it could do is much smaller.
+- **Added a "health check" page** (`api/health.php`) — a simple page that just says "yes, I'm alive and can reach the database" or not. Docker checks this automatically to know if the app is actually working, not just switched on.
+- **Cleaned up how errors get logged.** Before, error messages were scattered free-text notes. Now there's one small `Logger` helper that writes every error the same tidy way (as one line of structured data), so if something breaks, it's much easier to search the logs and see what happened.
+- **Added tests that prove the try/catch fix actually works.** Instead of just trusting the code, there are now automated tests that call the real endpoints and check they respond correctly.
+- **Added automatic testing on every code change (CI).** Every time code is pushed, a robot now automatically: installs everything, checks for known security issues in dependencies, runs all the tests, builds the Docker image, and scans that image for security problems — all without a human having to remember to do it.
+
+### Frontend (`star-fe`)
+
+- **The app now retries automatically if the server is slow or down**, instead of just giving up silently. If the connection times out, it quietly tries again a couple of times before showing a small "having trouble reaching the server" message — better than the user just seeing nothing happen.
+- **The app's Docker container also no longer runs as root**, same reasoning as the backend above.
+- **Added a linter** — a tool that automatically checks the code for common mistakes and bad patterns every time it runs. This project didn't have one wired up before.
+- **Added automated browser tests (end-to-end tests).** These are robots that actually open the real website in a real browser and click around — checking the cookie banner appears/disappears correctly, and that admin login/logout works — just like a real visitor would, instead of only testing small pieces of code in isolation.
+- **Added the same kind of automatic testing on every code change (CI)** as the backend: lint, unit tests, the new browser tests, a security check on dependencies, and a Docker image build + scan.
+
+Together, these make the two apps closer to how a real company would run them in production — safer containers, automatic checks before anything gets merged, and tests that actually exercise the real app instead of just the code in isolation.
+
+_star-be enhancements and star-fe enhancements: committed separately, not yet pushed as of this note._
