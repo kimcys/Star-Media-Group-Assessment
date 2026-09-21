@@ -1,0 +1,94 @@
+# Production stack for aimanhakimcy.com. Deliberately pulls pre-built
+# images (built and scanned in CI, pushed to ghcr.io) rather than building
+# on the server itself - this droplet is a 1GB box, and a Node/npm build
+# for the frontend alone would eat most of that on its own.
+#
+# Usage (from this directory, on the server):
+#   docker compose -f docker-compose.production.yml --env-file .env.production up -d
+#
+# Requires ../star-be and ../star-fe checked out as siblings (i.e. this
+# repo cloned with --recurse-submodules) - schema.sql and the DB grants
+# script are read from star-be's own checkout, not baked into any image.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
+
+  frontend:
+    image: ghcr.io/kimcys/star-fe:latest
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 96M
+
+  backend:
+    image: ghcr.io/kimcys/star-be:latest
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASSWORD}
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../star-be/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ../star-be/docker/mysql-init/002-grants.sql:/docker-entrypoint-initdb.d/002-grants.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

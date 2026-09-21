@@ -1,0 +1,21 @@
+aimanhakimcy.com {
+	encode gzip
+
+	# Anything the PHP backend actually owns: the JSON API, the root-level
+	# consent-handler.php endpoint, and the server-rendered admin fallback
+	# pages (which all end in .php - the Angular SPA's own /admin/login and
+	# /admin/dashboard routes have no extension, so there's no collision).
+	@backend {
+		path /api/*
+		path /consent-handler.php
+		path /admin/*.php
+	}
+	handle @backend {
+		reverse_proxy backend:8080
+	}
+
+	# Everything else - the Angular SPA.
+	handle {
+		reverse_proxy frontend:8080
+	}
+}
