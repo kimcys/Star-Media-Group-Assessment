@@ -17,6 +17,49 @@ For anything specific to one side (environment variables, API
 endpoints, component structure, etc.), see that project's own README —
 this file intentionally doesn't duplicate that detail.
 
+## Architecture
+
+```mermaid
+flowchart TD
+    Dev["Aiman<br/>git push to main"] --> GH
+
+    subgraph GH["GitHub"]
+        RepoBE[("star-be")]
+        RepoFE[("star-fe")]
+        RepoRoot[("root repo<br/>deploy/ config")]
+        RepoMicro[("aiman-engineering-assessment")]
+    end
+
+    GH -->|"CI: test, scan, build"| GHCR[("ghcr.io<br/>container registry")]
+    GH -->|"CI: SSH deploy on push"| Caddy
+    GHCR -->|"docker compose pull"| Caddy
+    RepoMicro -->|"CI: deploy_on_push"| AppPlatform
+
+    subgraph DO["DigitalOcean - project: star-assessment"]
+        subgraph Droplet["Droplet: star-be-web (sgp1, 1GB)"]
+            Caddy["Caddy reverse proxy<br/>custom rate-limit build<br/>TLS termination"]
+            FE["frontend container<br/>star-fe on nginx"]
+            BE["backend container<br/>star-be on Apache (non-root)"]
+            DB[("MySQL 8<br/>internal network only")]
+            Caddy --> FE
+            Caddy --> BE
+            BE --> DB
+        end
+
+        AppPlatform["App Platform<br/>free static site tier"]
+    end
+
+    Visitor(("Visitor"))
+    Visitor -->|"aimanhakimcy.com /<br/>api.aimanhakimcy.com<br/>(DO-managed DNS, HTTPS)"| Caddy
+    Visitor -->|"assessment.aimanhakimcy.com<br/>(CNAME, HTTPS)"| AppPlatform
+```
+
+Kept as a diagram-as-code block (not an image) so it stays accurate —
+edit it here and it renders automatically wherever GitHub displays this
+file. A rendered copy also lives at [`infra.png`](infra.png) for
+contexts that don't render Mermaid (e.g. a PDF export of the written
+assessment).
+
 ## Live deployment
 
 Deployed at **https://aimanhakimcy.com**, with the frontend and backend
