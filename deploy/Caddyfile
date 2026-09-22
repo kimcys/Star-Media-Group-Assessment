@@ -8,12 +8,20 @@ aimanhakimcy.com {
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "geolocation=(), camera=(), microphone=()"
 		# style-src needs 'unsafe-inline' because Angular's production
-		# build inlines critical CSS directly into index.html; script-src
-		# doesn't, since the build only ever references external, hashed
-		# .js files, never inline scripts. frame-src allows the About
-		# page's OpenStreetMap embed; connect-src allows the SPA's own
-		# calls to the API subdomain.
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src https://www.openstreetmap.org; connect-src 'self' https://api.aimanhakimcy.com; base-uri 'self'; form-action 'self'"
+		# build inlines critical CSS directly into index.html. script-src
+		# needs it too - not for app code (the build only ever emits
+		# external, hashed .js files, never inline <script> tags) but
+		# because Angular's own build tooling also emits a standard
+		# critical-CSS async-loading snippet on every page
+		# (<link ... onload="this.media='all'">), which is an inline
+		# event handler and is just as much "inline script" to a CSP as
+		# a <script> tag would be. Verified via a real browser against
+		# the live site (not just config validation) that dropping this
+		# breaks page load with a CSP violation, and that adding it back
+		# clears it with zero violations across Home and About (the
+		# OpenStreetMap iframe). frame-src allows that iframe;
+		# connect-src allows the SPA's own calls to the API subdomain.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src https://www.openstreetmap.org; connect-src 'self' https://api.aimanhakimcy.com; base-uri 'self'; form-action 'self'"
 	}
 
 	reverse_proxy frontend:8080
