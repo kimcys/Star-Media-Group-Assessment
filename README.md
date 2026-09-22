@@ -67,6 +67,23 @@ healthy before finishing. See each repo's `.github/workflows/ci.yml`
 (and this repo's `.github/workflows/deploy-infra.yml` for the Caddy
 piece specifically).
 
+### Trying it live
+
+- **Public site:** https://aimanhakimcy.com — nothing to set up, just visit it.
+- **Admin portal:** https://aimanhakimcy.com/admin/login — the real
+  login for the live admin account isn't in this repo. A real
+  credential committed to a public repo is a permanent, public leak,
+  even for a test project, so it's included directly in the email this
+  resubmission was sent with instead. Prefer not to wait on that, or
+  want to poke around more freely? Spin up the stack yourself (see
+  [Quick start](#quick-start--run-everything-with-one-command) below)
+  and create your own admin account in one command via
+  [`bin/create_admin.php`](star-be/README.md#creatingresetting-the-admin-user)
+  — no credential-sharing needed at all.
+- **API docs (Swagger):** https://api.aimanhakimcy.com/ — redirects
+  straight to a live Swagger UI reading the real deployed OpenAPI spec,
+  "Try it out" wired to the live API itself, not `localhost`.
+
 ## Cloning
 
 Because `star-be` and `star-fe` are submodules, a plain `git clone`
