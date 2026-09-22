@@ -12,7 +12,10 @@
 
 services:
   caddy:
-    image: caddy:2-alpine
+    # Custom build (deploy/caddy/Dockerfile), not stock caddy:2-alpine -
+    # rate limiting isn't part of core Caddy, it's the caddy-ratelimit
+    # plugin, compiled in via CI and pushed to ghcr.io like the app images.
+    image: ghcr.io/kimcys/caddy-ratelimit:latest
     restart: unless-stopped
     ports:
       - "80:80"

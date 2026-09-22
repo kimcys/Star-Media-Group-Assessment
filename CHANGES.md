@@ -27,6 +27,17 @@ before deciding whether to render, suppressing itself only on those
 two routes. The banner's behavior on every other route — Home, About,
 and reappearing after a decision expires — is unchanged.
 
+**Important — this is a suppression on two specific pages, not a change
+to the banner itself.** On Home and About, the banner still blocks
+scrolling until Accept or Decline is clicked, on purpose: the original
+brief (`Practical Test - S. Web Developer.pdf`, requirement 3) says
+plainly, *"The user must not be able to scroll the page until the
+consent box is addressed (either accepted or declined)."* That's a
+stated requirement, not an oversight — only the reviewer's own feedback
+(quoted above) carves out an exception for the Privacy Policy and Terms
+& Conditions pages specifically, so that's the only place it was
+changed.
+
 **Files:** `star-fe/src/app/app.routes.ts`,
 `star-fe/src/app/shared/components/consent-banner/consent-banner.ts`,
 `star-fe/src/app/shared/components/consent-banner/consent-banner.html`.
@@ -92,3 +103,24 @@ These go beyond the two specific fixes above. In plain words, here's what change
 Together, these make the two apps closer to how a real company would run them in production — safer containers, automatic checks before anything gets merged, branch protection backing that up, and tests that actually exercise the real app instead of just the code in isolation.
 
 _All of the above is committed and pushed to `main` on both `star-be` and `star-fe`, and both repos' CI pipelines are green._
+
+## 4. Actually deployed live, with automatic deploys
+
+Not asked for either, but it's real and it's up:
+
+- **Live site:** https://aimanhakimcy.com (the public site) and https://api.aimanhakimcy.com (the backend API) — both with a real, genuine HTTPS padlock, not a fake or self-signed one.
+- **It updates itself.** Every time code is pushed to `main` and passes every check above (tests, security scan, image scan), it automatically builds, ships, and restarts itself on the live server — no manual "upload the files" step, no one has to remember to deploy anything.
+- **Branch protection is proven to actually work, not just switched on.** Every direct push made while building this was flagged by GitHub as breaking the "must go through a pull request" rule — it only went through because the repo owner is deliberately allowed to bypass it for now, to keep working fast before the deadline. That's a real enforcement mechanism doing its job, not just a setting nobody's tested.
+
+### Real bugs this deployment caught — in plain words
+
+Going from "works on my computer" to "actually live for a stranger to visit" surfaces problems that never show up any other way. Four real ones came up:
+
+1. **A backend dependency was silently the wrong version.** A lock file had a package locked to a version that needs a newer PHP than the project is actually meant to run on. It worked by accident on the machine it was built on, and only broke the moment real automated testing ran it on the correct, official PHP version — exactly the kind of mismatch automated testing exists to catch. Fixed by regenerating the lock file properly on the right PHP version.
+2. **The wrong visitor address was being recorded.** With a reverse proxy now sitting in front of the app (normal for any real deployment), the consent log was recording the *proxy's own* address instead of the actual visitor's — because the code was reading the wrong piece of information. Fixed by reading the correct forwarded-address header instead.
+3. **The live site was trying to talk to "localhost."** A setting meant only for local testing was still hardcoded in, so the moment a real visitor loaded the live site, their browser tried to reach a server on *their own computer* — which obviously doesn't exist — breaking every single feature that talks to the backend (the cookie banner, the admin portal, everything). Fixed by making that address a build-time setting instead of a fixed value, so it's correct for wherever it's actually being deployed.
+4. **A security cookie wasn't shared correctly between the two live addresses.** Once the site and its API moved to two different addresses (`aimanhakimcy.com` and `api.aimanhakimcy.com`), a cookie needed to protect form submissions from forgery wasn't visible to the website's own code by default — cookies don't automatically cross to a different address unless explicitly told they're allowed to. Fixed by explicitly telling that cookie which addresses it's shared across.
+
+None of these four were guesses — each was actually observed happening on the live site, diagnosed, fixed, tested, and reverified live before moving on.
+
+_Live at https://aimanhakimcy.com. Deploy config lives in the root repo's `deploy/` folder; both repos' CI pipelines handle build, test, scan, and deploy automatically on every push to `main`._

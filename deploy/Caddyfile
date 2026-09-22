@@ -1,9 +1,48 @@
 aimanhakimcy.com {
 	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), camera=(), microphone=()"
+		# style-src needs 'unsafe-inline' because Angular's production
+		# build inlines critical CSS directly into index.html; script-src
+		# doesn't, since the build only ever references external, hashed
+		# .js files, never inline scripts. frame-src allows the About
+		# page's OpenStreetMap embed; connect-src allows the SPA's own
+		# calls to the API subdomain.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src https://www.openstreetmap.org; connect-src 'self' https://api.aimanhakimcy.com; base-uri 'self'; form-action 'self'"
+	}
+
 	reverse_proxy frontend:8080
 }
 
 api.aimanhakimcy.com {
 	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Edge-level rate limiting on the admin login endpoint, on top of the
+	# existing per-account database lockout (5 attempts/60s in
+	# AdminAuth) - defense in depth. This one is IP-based and catches a
+	# single attacker hammering many different usernames, which the
+	# per-account lockout alone wouldn't slow down at all.
+	route /api/admin/login.php {
+		rate_limit {
+			zone login_by_ip {
+				key {remote_host}
+				events 10
+				window 1m
+			}
+		}
+		reverse_proxy backend:8080
+	}
+
 	reverse_proxy backend:8080
 }

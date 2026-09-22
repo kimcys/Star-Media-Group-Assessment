@@ -17,6 +17,56 @@ For anything specific to one side (environment variables, API
 endpoints, component structure, etc.), see that project's own README —
 this file intentionally doesn't duplicate that detail.
 
+## Live deployment
+
+Deployed at **https://aimanhakimcy.com**, with the frontend and backend
+split across two subdomains rather than the local dev setup's two
+ports:
+
+| Address | What | 
+|---------|------|
+| `https://aimanhakimcy.com` | The Angular SPA (the 4 public pages, admin portal UI) |
+| `https://api.aimanhakimcy.com` | The PHP JSON API |
+
+Both get a real, automatically-renewed Let's Encrypt certificate via
+[Caddy](https://caddyserver.com/), which sits in front of both as a
+reverse proxy (`deploy/Caddyfile`, `deploy/docker-compose.production.yml`
+in this repo) and also:
+
+- Adds security headers (`Strict-Transport-Security`,
+  `Content-Security-Policy`, `X-Content-Type-Options`, etc.) to every
+  response — not something either app sets itself, so it lives at the
+  edge instead.
+- Rate-limits the admin login endpoint by IP (10 requests/minute), on
+  top of the existing per-account database lockout in `AdminAuth` — two
+  independent layers, since the database lockout alone doesn't slow
+  down one attacker spraying many different usernames.
+- Runs a [custom-built image](deploy/caddy/Dockerfile) rather than
+  stock `caddy:2-alpine`, since IP-based rate limiting isn't part of
+  core Caddy — it's the
+  [caddy-ratelimit](https://github.com/mholt/caddy-ratelimit) plugin,
+  compiled in and published the same way as the app images (see
+  below).
+
+Because the frontend and API are on different subdomains, this is a
+genuinely cross-origin setup — unlike local dev's `localhost:4200` /
+`localhost:8000` split, which is same-*site* but still cross-*origin*
+too, so the same CORS handling applies in both. One thing specific to
+the subdomain split: the CSRF cookie needs an explicit `Domain`
+(`COOKIE_DOMAIN=aimanhakimcy.com`) so frontend JS on `aimanhakimcy.com`
+can read a cookie issued by `api.aimanhakimcy.com` — see
+`star-be/includes/csrf.php`.
+
+**It deploys itself.** Every push to `main` on `star-be`, `star-fe`, or
+this repo's own `deploy/` folder runs that project's CI (test → security
+scan → Docker build → image scan → publish to
+[ghcr.io](https://github.com/kimcys?tab=packages)), and — only for a
+real push to `main`, never a pull request — automatically rolls the
+updated service out to the live server and verifies it came back
+healthy before finishing. See each repo's `.github/workflows/ci.yml`
+(and this repo's `.github/workflows/deploy-infra.yml` for the Caddy
+piece specifically).
+
 ## Cloning
 
 Because `star-be` and `star-fe` are submodules, a plain `git clone`
