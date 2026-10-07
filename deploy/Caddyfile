@@ -53,4 +53,19 @@ api.aimanhakimcy.com {
 	}
 
 	reverse_proxy backend:8080
+
+	# The rate limiter answers 429 from inside Caddy, so PHP never gets
+	# to add its CORS headers. Without them the browser hides the status
+	# and the SPA only sees an opaque "CORS error". Only error responses
+	# come through here, so a normal PHP reply never gets duplicate headers.
+	handle_errors {
+		@rate_limited expression {err.status_code} == 429
+		handle @rate_limited {
+			header Access-Control-Allow-Origin "https://aimanhakimcy.com"
+			header Access-Control-Allow-Credentials "true"
+			header Content-Type "application/json; charset=utf-8"
+			header Retry-After "60"
+			respond `{"success":false,"locked":true,"retryAfterSeconds":60,"error":"Too many login attempts. Please wait a minute."}` 429
+		}
+	}
 }
